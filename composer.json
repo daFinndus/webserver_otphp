@@ -1,0 +1,17 @@
+{
+    "name": "finn/webserver_totp",
+    "autoload": {
+        "psr-4": {
+            "Finn\\WebserverTotp\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "daFinndus",
+            "email": "finnlucajensen555@gmail.com"
+        }
+    ],
+    "require": {
+        "spomky-labs/otphp": "^11.0"
+    }
+}

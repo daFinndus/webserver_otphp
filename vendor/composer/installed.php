@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'reference' => NULL,
+        'name' => 'finn/webserver_totp',
+        'dev' => true,
+    ),
+    'versions' => array(
+        'finn/webserver_totp' => array(
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'reference' => NULL,
+            'dev_requirement' => false,
+        ),
+        'paragonie/constant_time_encoding' => array(
+            'pretty_version' => 'v2.7.0',
+            'version' => '2.7.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../paragonie/constant_time_encoding',
+            'aliases' => array(),
+            'reference' => '52a0d99e69f56b9ec27ace92ba56897fe6993105',
+            'dev_requirement' => false,
+        ),
+        'spomky-labs/otphp' => array(
+            'pretty_version' => '11.2.2',
+            'version' => '11.2.2.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spomky-labs/otphp',
+            'aliases' => array(),
+            'reference' => 'b737d1c6330beae7c0bc225d3e848805b352fe42',
+            'dev_requirement' => false,
+        ),
+    ),
+);
