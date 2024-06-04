@@ -112,6 +112,7 @@ $conn->close();
 </head>
 
 <body>
+    <br>
     <h1>Registration</h1>
     <form method="POST" action="">
         <label for="username">Username:</label>
