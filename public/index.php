@@ -1,7 +1,48 @@
 <?php
 
+require('mysql.php');
+
 // Retrieve username from cookie
 $username = $_COOKIE['username'];
+
+$sql = array(
+    "servername" => "localhost",
+    "username" => "root",
+    "password" => "swordfish",
+    "dbname" => "eight"
+);
+
+// Check if the username is in our database and redirect to register if it is not
+$conn = new mysqli($sql["servername"], $sql["username"], $sql["password"], $sql["dbname"]);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// This function is from mysql.php
+CreateDatabase($conn, $sql["dbname"]);
+
+// Select the database
+$conn->select_db($sql["dbname"]);
+
+// This function is from mysql.php
+CreateUsersTable($conn, $sql["dbname"]);
+
+try {
+    $stmt = $conn->prepare("SELECT username FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->bind_result($user);
+    $stmt->fetch();
+    $stmt->close();
+} catch (Exception $e) {
+    echo "Error while checking username: " . $e->getMessage();
+}
+
+if ($user != $username) {
+    header("Location: /register.php");
+}
 
 ?>
 
