@@ -1,9 +1,12 @@
 <?php
 
-require('../vendor/autoload.php');
-require('mysql.php');
+require ('../vendor/autoload.php');
+require ('functions.php');
 
 use OTPHP\TOTP;
+
+// Hardcoded pepper
+$pepper = 'piRHOCe4';
 
 $sql = array(
     "servername" => "localhost",
@@ -22,9 +25,6 @@ if ($conn->connect_error) {
 
 $totp = TOTP::create();
 $secret = $totp->getSecret();
-$totp->setLabel('Eight');
-
-$qrCodeUrl = $totp->getProvisioningUri();
 
 // This function is from mysql.php
 CreateDatabase($conn, $sql["dbname"]);
@@ -38,12 +38,27 @@ CreateUsersTable($conn, $sql["dbname"]);
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && !isset($_POST['otp'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $salt = RandomString(8);
+
+    file_put_contents('../seven/files/password.txt', $password);
+
+    shell_exec('javac -cp "../seven/lib/*" -d "../seven/bin" src/*.java');
+    shell_exec('java -cp "../seven/bin;../seven/lib/*" Main hash "../seven/files/password.txt" MD5');
+
+    $password = file_get_contents('../seven/files/MD5_password.txt');
 
     // Store username, password, and secret in session
     session_start();
     $_SESSION['username'] = $username;
-    $_SESSION['password'] = password_hash($password, PASSWORD_DEFAULT);
+    $_SESSION['password'] = $password . $salt . $pepper;
     $_SESSION['secret'] = $secret;
+    $_SESSION['salt'] = $salt;
+
+    // Set label and add username to TOTP
+    $totp->setIssuer('Eight');
+    $totp->setLabel($username);
+
+    $qrCodeUrl = $totp->getProvisioningUri();
 
     // Display QR code for scanning
     echo "
@@ -73,14 +88,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['otp'])) {
     $username = $_SESSION['username'];
     $watchword = $_SESSION['password'];
     $secret = $_SESSION['secret'];
+    $salt = $_SESSION['salt'];
     $otp = $_POST['otp'];
 
     $totp = TOTP::create($secret);
+    $time = time();
 
-    if ($totp->verify($otp)) {
+    if ($totp->verify($otp, ($time - 30)) || $totp->verify($otp) || $totp->verify($otp, ($time + 30))) {
         try {
-            $stmt = $conn->prepare("INSERT INTO users (username, password, secret) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $username, $watchword, $secret);
+            $stmt = $conn->prepare("INSERT INTO users (username, password, secret, salt) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $username, $watchword, $secret, $salt);
 
             if ($stmt->execute()) {
                 echo "<script>alert('Registration successful!'); window.location.href = 'login.php';</script>";
@@ -93,10 +110,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['otp'])) {
             echo "Error while signing up: " . $e->getMessage();
         }
     } else {
-        echo "<script>alert('Invalid OTP. Please try again.');</script>";
+        // Stay on the OTP page and show an error message
+        echo "
+                <html>
+                    <head>
+                        <title>Scan QR Code</title>
+                        <link rel='stylesheet' type='text/css' href='form.css'>
+                    </head>
+                    <body>
+                        <br>
+                        <h1>Scan the QR Code</h1>
+                        <form method='POST' action=''>
+                            <label for='otp'>Enter OTP:</label>
+                            <input type='text' id='otp' name='otp' required>
+                            <p style='color: red;'>Invalid OTP. Please try again.</p>
+                            <button type='submit'>Finish registration!</button>
+                        </form>
+                    </body>
+                </html>
+                ";
+        exit();
     }
 
     session_destroy();
+
+    file_put_contents('../seven/files/password.txt', 'This file is already overwritten!');
 }
 
 $conn->close();

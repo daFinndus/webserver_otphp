@@ -1,9 +1,12 @@
 <?php
 
-require('../vendor/autoload.php');
-require('mysql.php');
+require ('../vendor/autoload.php');
+require ('functions.php');
 
 use OTPHP\TOTP;
+
+// Hardcoded pepper
+$pepper = 'piRHOCe4';
 
 $sql = array(
     "servername" => "localhost",
@@ -26,20 +29,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $otp = $_POST['otp'];
 
     try {
-        $stmt = $conn->prepare("SELECT password, secret FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT password, secret, salt FROM users WHERE username = ?");
         $stmt->bind_param("s", $username);
         $stmt->execute();
-        $stmt->bind_result($watchword, $secret);
+        $stmt->bind_result($watchword, $secret, $salt);
         $stmt->fetch();
         $stmt->close();
     } catch (Exception $e) {
         echo "Error while logging in: " . $e->getMessage();
     }
 
-    if (password_verify($password, $watchword)) {
-        $totp = TOTP::create($secret);
+    file_put_contents('../seven/files/password.txt', $password);
 
-        if ($totp->verify($otp)) {
+    shell_exec('javac -cp "../seven/lib/*" -d "../seven/bin" src/*.java');
+    shell_exec('java -cp "../seven/bin;../seven/lib/*" Main hash "../seven/files/password.txt" MD5');
+
+    $password = file_get_contents('../seven/files/MD5_password.txt');
+
+    $password = $password . $salt . $pepper;
+
+    echo "Comparing " . $password . " with " . $watchword . "<br>";
+
+    if ($password == $watchword) {
+        $totp = TOTP::create($secret);
+        $time = time();
+
+        // Also accept the previous and next OTPs
+        if ($totp->verify($otp, ($time - 30)) || $totp->verify($otp) || $totp->verify($otp, ($time + 30))) {
             echo "Login successful!";
 
             // Redirect to home page and store username in cookie
@@ -51,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         echo "<script>alert('Invalid username or password.')</script>";
     }
+
+    file_put_contents('../seven/files/password.txt', 'This file is already overwritten!');
 }
 
 $conn->close();

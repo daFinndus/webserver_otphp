@@ -3,7 +3,7 @@
         'name' => 'finn/webserver_totp',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'b8f716936a734d65359167b7b4a051e9cceb066f',
+        'reference' => '23880eb1dcc39c4c5b87bdf3cd0a9b2e9ff37738',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'finn/webserver_totp' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'b8f716936a734d65359167b7b4a051e9cceb066f',
+            'reference' => '23880eb1dcc39c4c5b87bdf3cd0a9b2e9ff37738',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
