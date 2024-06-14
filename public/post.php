@@ -11,7 +11,7 @@ $posts = [
     ]
 ];
 
-$postId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
+$postId = isset($_GET['id']) ? (int) $_GET['id'] : 1;
 $post = isset($posts[$postId]) ? $posts[$postId] : $posts[1];
 
 ?>
